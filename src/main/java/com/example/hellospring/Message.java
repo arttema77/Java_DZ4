@@ -1,34 +1,66 @@
 package com.example.hellospring;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
+@Entity
+@Table(name = "message")
 public class Message {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 1000)
     private String content;
-    private Long authorId;
-    private String authorUsername;
-    private String authorDisplayName;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public Message() {}
-    public Message(String content, Long authorId) {
-        this.content = content; this.authorId = authorId;
+    @ManyToOne(fetch = FetchType.LAZY)  // важно LAZY для демонстрации проблем
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    protected Message() {
+        // JPA конструктор
     }
 
-    public Long getId(){ return id; }
-    public void setId(Long id){ this.id = id; }
-    public String getContent(){ return content; }
-    public void setContent(String content){ this.content = content; }
-    public Long getAuthorId(){ return authorId; }
-    public void setAuthorId(Long authorId){ this.authorId = authorId; }
-    public String getAuthorUsername(){ return authorUsername; }
-    public void setAuthorUsername(String authorUsername){ this.authorUsername = authorUsername; }
-    public String getAuthorDisplayName(){ return authorDisplayName; }
-    public void setAuthorDisplayName(String authorDisplayName){ this.authorDisplayName = authorDisplayName; }
-    public LocalDateTime getCreatedAt(){ return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt){ this.createdAt = createdAt; }
+    public Message(String content, User author) {
+        this.content = content;
+        this.author = author;
+        this.createdAt = LocalDateTime.now();
+    }
 
-    @Override public boolean equals(Object o){ return o instanceof Message m && Objects.equals(id,m.id); }
-    @Override public int hashCode(){ return Objects.hash(id); }
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+
+    // getters / setters
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getContent() { return content; }
+
+    public void setContent(String content) { this.content = content; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public User getAuthor() { return author; }
+
+    public void setAuthor(User author) { this.author = author; }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }

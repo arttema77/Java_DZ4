@@ -1,27 +1,49 @@
 package com.example.hellospring;
 
-import java.util.Objects;
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "app_user") // не "user", чтобы не конфликтовать с ключевым словом
 public class User {
-    private Long id;
-    private String username;
-    private String displayName;
-    private String email;
 
-    public User() {}
-    public User(String username, String displayName, String email) {
-        this.username = username; this.displayName = displayName; this.email = email;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @OneToMany(
+            mappedBy = "author",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Message> messages = new ArrayList<>();
+
+    public User() {
     }
 
+    public User(String username) {
+        this.username = username;
+    }
+
+    // getters / setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
 
-    @Override public boolean equals(Object o){ return o instanceof User u && Objects.equals(id,u.id); }
-    @Override public int hashCode(){ return Objects.hash(id); }
+    public List<Message> getMessages() { return messages; }
+    public void setMessages(List<Message> messages) { this.messages = messages; }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }
